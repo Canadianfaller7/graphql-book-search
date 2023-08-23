@@ -31,11 +31,8 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    login: async (parent, { username, email }) => {
-      const user = await User.findOne({ 
-        username, 
-        email 
-      });
+    login: async (parent, { email, password }) => {
+      const user = await User.findOne({ email });
 
       if (!user) {
         throw new AuthenticationError('No user found with this email address');
