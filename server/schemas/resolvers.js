@@ -4,21 +4,30 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    users: async () => {
-      return User.find().populate('savedBooks');
+    me: async (parent, args, context) => { 
+      if (context.user) {
+        const userData = await User.findOne({ _id: context.user._id })
+        // .select('-__v -password')
+        .populate('savedBooks');
+        return userData;
+      }
+      throw new AuthenticationError('You need to be logged in!');
     },
-    user: async (parent, { username }) => {
-      return User.findOne({ username }).populate("savedBooks")
-    },
-    books: async () => {
-      return Book.find();
-    },
+    // users: async () => {
+    //   return User.find().populate('savedBooks');
+    // },
+    // user: async (parent, { _id }) => {
+    //   return User.findOne({ _id }).populate("savedBooks")
+    // },
+    // books: async () => {
+    //   return Book.find();
+    // },
 
   },
 
   Mutation: {
-    addUser: async (parent, { username, email, password }) => {
-      const user = await User.create({ username, email, password });
+    addUser: async (parent, { email, password, username }) => {
+      const user = await User.create({ email, password, username });
       const token = signToken(user);
       return { token, user };
     },
