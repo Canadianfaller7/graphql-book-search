@@ -55,10 +55,10 @@ const SavedBooks = () => {
             : "You have no saved books!"}
         </h2>
         <CardColumns>
+          {console.log(`book image: ${userData.savedBooks[0].image}`)}
           {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
-                {console.log(`book image: ${book.image}`)}
                 {book.image
                   ? (
                   <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' />
