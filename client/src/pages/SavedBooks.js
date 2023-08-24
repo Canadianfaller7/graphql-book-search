@@ -58,7 +58,6 @@ const SavedBooks = () => {
           {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
-                {console.log(`book image: ${book.image}`)}
                 {book.image
                   ? (
                   <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' />
