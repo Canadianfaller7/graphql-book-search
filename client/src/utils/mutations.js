@@ -71,25 +71,6 @@ export const REMOVE_BOOK = gql`
       email
       bookCount
       savedBooks {
-        bookId
-        description
-        title
-        image
-        link
-        authors
-      }
-    }
-  }
-`;
-
-export const REMOVE_BOOK = gql`
-  mutation deleteBook($bookId: ID!) {
-    deleteBook(bookId: $bookId) {
-      _id
-      username
-      email
-      bookCount
-      savedBooks {
         authors
         bookId
         description
