@@ -40,8 +40,8 @@ const typeDefs = gql `
       title: String
       ): User 
       deleteBook(bookId: ID!): User
-    }
-    `;
+  }
+`;
 
 module.exports = typeDefs;
 
