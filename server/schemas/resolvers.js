@@ -1,32 +1,37 @@
 const { AuthenticationError } = require('apollo-server-express');
-const { User, Book } = require('../models');
+const { User } = require('../models');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    users: async () => {
-      return User.find().populate('savedBooks');
+    
+    me: async (parent, args, context) => { 
+      if (context.user) {
+        const userData = await User.findOne({ _id: context.user._id })
+        // .select('-__v -password')
+        .populate('savedBooks');
+        return userData;
+      }
+      throw new AuthenticationError('You need to be logged in!');
     },
-    user: async (parent, { username }) => {
-      return User.findOne({ username }).populate("savedBooks")
-    },
-    books: async () => {
-      return Book.find();
-    },
-
+    // users: async () => {
+    //   return User.find().populate('savedBooks');
+    // },
+    // user: async (parent, { _id }) => {
+    //   return User.findOne({ _id }).populate("savedBooks")
+    // },
   },
 
   Mutation: {
-    addUser: async (parent, { username, email, password }) => {
-      const user = await User.create({ username, email, password });
+
+    addUser: async (parent, { email, password, username }) => {
+      const user = await User.create({ email, password, username });
       const token = signToken(user);
       return { token, user };
     },
-    login: async (parent, { username, email }) => {
-      const user = await User.findOne({ 
-        username, 
-        email 
-      });
+
+    login: async (parent, { email, password }) => {
+      const user = await User.findOne({ email });
 
       if (!user) {
         throw new AuthenticationError('No user found with this email address');
@@ -42,26 +47,31 @@ const resolvers = {
 
       return { token, user };
     },
+
     saveBook: async (parent, args, context) => {
+      if (!args.description) {
+        args.description = "No description available";
+      }
       if (context.user) {
         const updatedUser = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $addToSet: { savedBooks: { bookId: args.bookId }} },
-          { new: true }
+          { $addToSet: { savedBooks: args, } },
+          {
+            new: true,
+            runValidators: true,
+          }
         );
-        if (!updatedUser) {
-          throw new Error("Couldn't find user with this id!");
-        }
         return updatedUser;
       }
       throw new AuthenticationError('You need to be logged in to save a book.');
     },
-    deleteBook: async (parent, args, context) => {
+
+    deleteBook: async (parent, { bookId }, context) => {
       if (context.user) {
 
-        const updatedUser = await User.findOneAndDelete(
+        const updatedUser = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: { bookId: args.bookId }} },
+          { $pull: { savedBooks: { bookId } } },
           { new: true }
         );
         if (!updatedUser) {
